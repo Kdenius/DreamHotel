@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const validator = require("validator");
 
 const RenterSchema = new mongoose.Schema(
     {
@@ -15,10 +14,6 @@ const RenterSchema = new mongoose.Schema(
             type: String,
             required : true,
             unique: [true, "Email id already present"],
-            validate(value){
-                if(!validator.isEmail(value))
-                    throw new Error("Invalid Email formate  ");
-            }
 
         },
         password: {

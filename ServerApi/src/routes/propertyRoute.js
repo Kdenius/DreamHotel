@@ -1,5 +1,5 @@
 const express = require("express");
-const {add, all, oall, del, update, getByid, availableRoom} = require("../controllers/propertyController");
+const {add, all, oall, del, update, getByid, availableRoom, changeStatus} = require("../controllers/propertyController");
 
 const router =  express.Router();
 
@@ -9,7 +9,7 @@ router.route("/all").get(all); // totally all
 router.route("/all/:id").get(oall); // show all property of owner
 router.route("/:id").delete(del); // delete property
 router.route("/:id").patch(update); //update by id
-router.route("/:id").post(availableRoom) // return available room
-
+router.route("/:id").post(availableRoom); // return available room
+router.route("/:id/:status").get(changeStatus); // change pendig , active, blocked
 
 module.exports = router;

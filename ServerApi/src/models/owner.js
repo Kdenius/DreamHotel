@@ -23,10 +23,7 @@ const OwnerSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
-        propertyList : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }],
-        reservationList :[{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
-       
-
+        propertyList : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }]
     },
     {timestamps: true}
 );

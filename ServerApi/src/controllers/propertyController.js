@@ -52,6 +52,11 @@ exports.del = async(req, res, next) => {
 
         if(!property)   
             res.status(404).send("no property found");
+        let cur = new Date();
+        bookings = await Booking.find({property: req.params.id, endDate: {$gt : cur}});
+        if(bookings.length !== 0){
+            return res.status(404).send("can't delete..");
+        }
         const owner = await Owner.findById(property.owner);
         owner.propertyList.pull(property._id);
         let a= await owner.save();
@@ -77,18 +82,44 @@ exports.availableRoom = async(req, res, next) =>{
     try{
         const {startDate, endDate} = req.body;
         const pdata = await Property.findById(req.params.id);
-        
         const s = new Date(startDate);
         const e = new Date(endDate);
 
         const bookings = await Booking.find({
-            property: pdata._id, 
-            startDate: { $gte: s, $lt: e}, 
-            endDate: {$gt: s, $lte: e}
-        });
+            property: pdata._id,
+            $nor: [
+                {
+                    $and : [
+                        {startDate : {$lt: s}},
+                        {endDate: {$lte: s}}
+                    ]
+                },
+                {
+                    $and : [
+                        {startDate : {$gte: e}},
+                        {endDate: {$gt: e}}
+                    ]
+                }
+            ] //this query gives all booking which are during this given date...
+            });
 
-        
+            let availableRoom = pdata.rooms;
+            bookings.map((e) => availableRoom -= e.totalRoom);
+            console.log(bookings);
+        res.send({availableRoom});
 
+    }catch(e){
+        res.status(400).send(e);
+    }
+}
+
+exports.changeStatus = async(req, res, next) => {
+    try{
+        const property = Property.findById(req.params.id);
+        if(!property)  
+            res.status(500).send("not found");
+        const ret = await Property.findByIdAndUpdate(req.params.id, {status: req.params.status}, {new: true});
+        res.status(200).send(ret);
     }catch(e){
         res.status(400).send(e);
     }

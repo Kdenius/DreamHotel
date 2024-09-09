@@ -17,11 +17,8 @@ exports.add = async(req, res, next) =>{
         const booking = new Booking({renter, property, startDate:d, endDate:e, totalRoom, totalPrice});
         const ret = await booking.save();
 
-        const odata = await Owner.findById(pdata.owner);
         const rdata = await Renter.findById(renter);
-        odata.reservationList.push(ret._id);
         rdata.tripList.push(ret._id);
-        let x= await odata.save();
         let y=await rdata.save();
 
         res.status(201).send(ret);
@@ -40,6 +37,16 @@ exports.all = async(req, res, next) =>{
     }
 }
 
+exports.oallbooking = async(req, res, next) =>{
+    try{
+        const propertyList = await Owner.findById(req.params.id).select('propertyList');
+        let ret = await Booking.find({property: {$in: propertyList}});
+        res.status(201).send(ret);
+
+    }catch(e){
+        res.status(400).send(e);
+    }
+}
 exports.bookingOnProperty = async(req, res, next) =>{
     try{
         const ret = await Booking.find({property: req.params.pid});
@@ -51,7 +58,11 @@ exports.bookingOnProperty = async(req, res, next) =>{
 
 exports.del = async(req, res, next) =>{
     try{
-        const ret = await Booking.findByIdAndDelete({_id: req.params.bid});
+        const booking = await Booking.findById(req.params.bid);
+        const renter = await Renter.findById(booking.renter);
+        renter.tripList.pull(booking._id);
+        const t = await renter.save();
+        const ret = await Booking.findOneAndDelete({_id: req.params.bid});
         res.status(201).send(ret);
     }catch(e){
         res.status(400).send(e);

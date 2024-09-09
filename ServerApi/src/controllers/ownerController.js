@@ -1,8 +1,12 @@
 const express  = require("express");
+const { validationResult } = require('express-validator');
 const Owner = require("../models/owner");
 
 exports.signup = async (req, res, next) => {
     try{
+        const error = validationResult(req);
+        if(!error.isEmpty())
+            return res.status(400).send(error);
         const owner = new Owner(req.body);
         const ret = await owner.save();
         res.status(201).send(ret);

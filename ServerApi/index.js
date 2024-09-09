@@ -16,6 +16,10 @@ app.use("/property", property);
 app.use("/renter", renter);
 app.use("/booking", booking);
 
+app.use((req, res, next) => {
+    return res.status(404).send(`can't found path ${req.method} ${req.originalUrl}`);
+  });
+
 
 
 // const Owner = require("./src/models/owner");
