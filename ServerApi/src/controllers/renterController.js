@@ -3,15 +3,35 @@ const { validationResult } = require('express-validator');
 const Renter = require("../models/renter");
 const Owner = require("../models/owner");
 const Booking = require("../models/booking");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+
 
 exports.signup = async (req, res, next) => {
     try{
         const error = validationResult(req);
         if(!error.isEmpty())
             return res.status(400).send(error);
-        const renter = new Renter(req.body);
+
+        const { password, ...otherDetails } = req.body;
+        let hashedPassword = await bcrypt.hash(password, 13);
+        const renter = new Renter({
+            ...otherDetails,
+            password: hashedPassword
+        });
+
         const ret = await renter.save();
-        res.status(201).send(ret);
+
+        // const data = {
+        //     user:{
+        //         _id:ret._id
+        //     }
+        // }
+        const authToken = jwt.sign({_id : ret._id, isRenter : true}, process.env.JWT_SECRET);
+
+        res.status(201).send({user:ret, authToken:authToken});
     }catch(e){
         res.status(400).send(e);
     }
@@ -21,12 +41,23 @@ exports.login = async(req, res, next) =>{
     try{
 
         const {email, password} = req.body;
-        const ret =await Renter.findOne({email}).populate("wishList").populate("tripList");
+        const ret = await Renter.findOne({email});
         if(!ret)
-            res.status(404).send("user not found !");
-        if(password !== ret.password)
-            res.status(401).send("password mismatch");
-        res.status(200).send(ret);
+            return res.status(400).send("user not found !");
+        let isValidPassword = false;
+        isValidPassword = await bcrypt.compare(password, ret.password);
+        if(!isValidPassword)
+            return res.status(401).send("password mismatch");
+        // const retf =await Renter.findOne({email}).populate("wishList").populate("tripList");
+        // const data = {
+        //     user:{
+        //         _id:ret._id
+        //     }
+        // }
+        const authToken = jwt.sign({_id : ret._id, isRenter : true}, process.env.JWT_SECRET);
+
+        res.status(201).send({user:ret, authToken:authToken});
+        // res.status(200).send(retf);
     }catch(e){
         res.status(400).send(e);
     }
@@ -60,13 +91,16 @@ exports.wishlist = async(req, res, next) => {
     try{
         const renter = await Renter.findById(req.params.rid);
         if(req.params.action == 'add'){
-            renter.wishList.push(req.params.pid);
+            if(renter.wishList.indexOf(req.params.pid) === -1)
+                renter.wishList.push(req.params.pid);
+            else 
+                return res.status(201).json({message: 'already in WishList'});
         }
         else if(req.params.action == 'remove'){
             renter.wishList.pull(req.params.pid);
         }
         const ret = await renter.save();
-        res.status(201).send(ret);
+        res.status(201).send({message: 'removed from WishList'});
     }catch(e){
         res.status(400).send(e);
     }
@@ -74,8 +108,26 @@ exports.wishlist = async(req, res, next) => {
 
 exports.triplist = async(req, res, next) => {
     try{
-        const triplist = await Renter.findById(req.params.id).populate("tripList").select("tripList");
+        // const triplist = await Renter.findById(req.params.id, 'tripList -_id',).populate("tripList").populate("property");
+        const triplist = await Renter.findById(req.params.id, 'tripList -_id')
+            .populate({
+                path: 'tripList',
+                populate: {
+                    path: 'property', // Populate the property field in Booking
+                }
+            });
+            console.log(triplist);
         res.send(triplist);
+    }catch(e){
+        res.status(400).send(e);
+    }
+}
+
+exports.getWishlist = async(req, res, next) => {
+    try{
+        const wishlist = await Renter.findById(req.params.rid, 'wishList -_id',).populate("wishList");
+        res.send(wishlist);
+        // console.log(wishlist);
     }catch(e){
         res.status(400).send(e);
     }

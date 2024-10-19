@@ -28,7 +28,7 @@ const RenterSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        tripList :[{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }],
+        tripList :[{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
         wishList :[{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }],
        
 

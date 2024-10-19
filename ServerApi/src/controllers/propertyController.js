@@ -20,7 +20,8 @@ exports.add = async (req, res, next) =>{
 
 exports.all = async(req, res, next) => {
     try{
-        const propertys = await Property.find({}).populate("owner");
+        // console.log("no avvu joi");
+        const propertys = await Property.find({status:'active'}).populate("owner");
         res.status(201).send(propertys);
     }catch(e){
         res.status(400).send(e);
@@ -29,7 +30,10 @@ exports.all = async(req, res, next) => {
 
 exports.oall = async(req, res, next) => {
     try{
+        // console.log("aveche");
+        // const owner = await Owner.findById
         const owner = await Owner.findById(req.params.id).populate("propertyList");
+        // console.log(owner);
         res.status(201).send(owner.propertyList);
         
     }catch(e){
@@ -51,17 +55,17 @@ exports.del = async(req, res, next) => {
         const property = await Property.findById(req.params.id);
 
         if(!property)   
-            res.status(404).send("no property found");
+            res.status(404).send({message: "no property found"});
         let cur = new Date();
-        bookings = await Booking.find({property: req.params.id, endDate: {$gt : cur}});
+        bookings = await Booking.find({property: req.params.id, endDate: {$gt : cur}, status: 'current'});
         if(bookings.length !== 0){
-            return res.status(404).send("can't delete..");
+            return res.status(404).send({message: 'Not Delete due to Bookings'});
         }
         const owner = await Owner.findById(property.owner);
         owner.propertyList.pull(property._id);
         let a= await owner.save();
         const ret = await Property.findOneAndDelete({_id:req.params.id});
-        res.status(201).send(ret);
+        res.status(201).send({message: 'Property Deleted Successfully'});
     }catch(e){
         res.status(400).send(e);
     }
@@ -105,7 +109,6 @@ exports.availableRoom = async(req, res, next) =>{
 
             let availableRoom = pdata.rooms;
             bookings.map((e) => availableRoom -= e.totalRoom);
-            console.log(bookings);
         res.send({availableRoom});
 
     }catch(e){

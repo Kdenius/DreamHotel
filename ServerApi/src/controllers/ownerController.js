@@ -1,31 +1,53 @@
 const express  = require("express");
 const { validationResult } = require('express-validator');
 const Owner = require("../models/owner");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+
 
 exports.signup = async (req, res, next) => {
     try{
         const error = validationResult(req);
         if(!error.isEmpty())
             return res.status(400).send(error);
-        const owner = new Owner(req.body);
+
+        const {password, ...otherDetails} = req.body;
+        let hashedPassword = await bcrypt.hash(password, 13);
+        const owner = new Owner({
+            ...otherDetails,
+            password: hashedPassword
+        });
+
         const ret = await owner.save();
-        res.status(201).send(ret);
+        console.log("pogeche");
+        const authToken = jwt.sign({_id : ret._id, isRenter : false}, process.env.JWT_SECRET);
+
+        res.status(201).send({user:ret, authToken:authToken});
+        // res.status(201).json(ret);
     }catch(e){
-        res.status(400).send(e);
+        res.status(400).json(e);
     }
 }
 
 exports.login = async (req, res, next) =>{
     try{
         const {email, password} = req.body;
-        const ret = await Owner.findOne({email}).populate("propertyList").populate("reservationList");
+        const ret = await Owner.findOne({email}).populate("propertyList");
         if(!ret)
             res.status(404).send("user not found !");
-        if(password !== ret.password)
+        let isValidPassword = false;
+    isValidPassword = await bcrypt.compare(password, ret.password);
+        if(!isValidPassword)
             res.status(401).send("password mismatch");
-        res.status(200).send(ret);
+
+        const authToken = jwt.sign({_id : ret._id, isRenter : false}, process.env.JWT_SECRET);
+
+        res.status(201).send({user:ret, authToken:authToken});
+        // res.status(200).json(ret);
     }catch(e){
-        res.status(400).send(e);
+        res.status(400).json(e);
     }
 }
 

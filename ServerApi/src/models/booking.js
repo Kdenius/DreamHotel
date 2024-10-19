@@ -10,6 +10,10 @@ const BookingSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Property",
         },
+        status: {
+            type: String,
+            default: "current",
+        },
         startDate: {
             type: Date,
             required: true,

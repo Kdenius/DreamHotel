@@ -23,6 +23,10 @@ const OwnerSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        phone: {
+            type: Number,
+            default: 0,
+        },  
         propertyList : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property' }]
     },
     {timestamps: true}
