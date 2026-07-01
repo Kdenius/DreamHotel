@@ -57,14 +57,22 @@ exports.oallbooking = async(req, res, next) =>{
     }
 }
 
-exports.bookingOnProperty = async(req, res, next) =>{
-    try{
-        const ret = await Booking.find({property: req.params.pid, status: 'current'}).populate('renter', '-_id firstName lastName email phone');
-        res.status(201).send(ret);
-    }catch(e){
+exports.bookingOnProperty = async (req, res, next) => {
+    try {
+        const ret = await Booking.find({
+            property: req.params.pid,
+            $or: [
+                { status: 'current' },
+                { status: 'makerefund' } // Include bookings with 'make refund' status
+            ]
+        }).populate('renter', '-_id firstName lastName email phone');
+
+        res.status(200).send(ret); // Changed to 200 for a successful GET request
+    } catch (e) {
         res.status(400).send(e);
     }
 }
+
 
 exports.del = async(req, res, next) =>{
     try{
@@ -91,9 +99,6 @@ exports.changeStatus = async (req, res, next) => {
         // Change status to "completed"
         booking.status = req.params.status;
 
-        // Process refund logic here
-        // For example, deduct the totalPrice from the renter's account
-        // (You need to implement this logic based on your application's requirements)
 
         await booking.save(); // Save the updated booking
 

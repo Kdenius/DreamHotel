@@ -43,11 +43,11 @@ exports.login = async(req, res, next) =>{
         const {email, password} = req.body;
         const ret = await Renter.findOne({email});
         if(!ret)
-            return res.status(400).send("user not found !");
+            return res.status(400).send({message:"user not found !"});
         let isValidPassword = false;
         isValidPassword = await bcrypt.compare(password, ret.password);
         if(!isValidPassword)
-            return res.status(401).send("password mismatch");
+            return res.status(401).send({message :"password mismatch"});
         // const retf =await Renter.findOne({email}).populate("wishList").populate("tripList");
         // const data = {
         //     user:{
@@ -91,16 +91,18 @@ exports.wishlist = async(req, res, next) => {
     try{
         const renter = await Renter.findById(req.params.rid);
         if(req.params.action == 'add'){
-            if(renter.wishList.indexOf(req.params.pid) === -1)
+            if(renter.wishList.indexOf(req.params.pid) === -1){
                 renter.wishList.push(req.params.pid);
+                res.status(201).send({message: 'added in WishList'});
+            }
             else 
-                return res.status(201).json({message: 'already in WishList'});
-        }
-        else if(req.params.action == 'remove'){
-            renter.wishList.pull(req.params.pid);
+            return res.status(201).json({message: 'already in WishList'});
+    }
+    else if(req.params.action == 'remove'){
+        renter.wishList.pull(req.params.pid);
+        res.status(201).send({message: 'removed from WishList'});
         }
         const ret = await renter.save();
-        res.status(201).send({message: 'removed from WishList'});
     }catch(e){
         res.status(400).send(e);
     }

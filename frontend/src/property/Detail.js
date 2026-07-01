@@ -16,6 +16,7 @@ export default function Detail({ data, onUpdate }) {
   const [numberOfRooms, setNumberOfRooms] = useState(1); // For room count
   const [totalPrice, setTotalPrice] = useState();
   const closeRef = useRef(null);
+  const authref = useRef(null);
 
   const handleCheckAvailability = async() => {
     let s;
@@ -29,7 +30,7 @@ export default function Detail({ data, onUpdate }) {
     }
     if (s) {
       setErrors(s);
-      setAvailableBookings(null); // Reset available bookings
+      setAvailableBookings(null);
       return;
     } 
       try{
@@ -58,6 +59,12 @@ export default function Detail({ data, onUpdate }) {
     setAvailableBookings(null);
   }
   const handleConfirmBooking = () =>{
+    handleCheckAvailability();
+    if(numberOfRooms > availableBookings){
+      toast.error('Opps!, your are late. ')
+      return;
+    }
+
     const bookingDetails = {
       propertyId: data._id,
       propertyTitle: data.title,
@@ -76,7 +83,6 @@ export default function Detail({ data, onUpdate }) {
     navigate('/bookings', { state: { propertyId: data._id, propertyTitle: data.title } });
   };
   const handleDelete = async () => {
-    // closeRef.current.click();
     try{
       const responseData = await sendRequest(`http://localhost:1204/property/${data._id}`, 'DELETE');
       toast.success(responseData.message,{autoClose: 500, hideProgressBar:true});
@@ -88,24 +94,29 @@ export default function Detail({ data, onUpdate }) {
 
 
   }
-
   return (
+    <>
     <div className="modal fade" id="detailModal" tabIndex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
       <div className="modal-dialog modal-lg" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title" id="detailModalLabel">{data.title}</h5>
+            <h5 className="modal-title" id="detailModalLabel">{data.title}</h5><small className='fw-light ms-3'>({data.address.streetAddress}, {data.address.city}, {data.address.state}, {data.address.country})</small>
             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={onCancle} ref={closeRef}></button>
           </div>
 
           <div className="modal-body">
 
-            <Carousel />
-
-            <p>{data.address.streetAddress}, {data.address.city}, {data.address.state}</p>
-            <p><strong>Price:</strong> {data.price} <small>/day</small></p>
+            <Carousel data={data.photos}/>
+            <p className='fw-light text-center'> {data.description}</p>
+            <div className='row g-0'>
+            <p className="col-6"><strong>Price:</strong> {data.price} <small>/day</small></p>
+            <p className="col-6"><strong>Total Rooms:</strong> {data.rooms}</p>
             <p><strong>Capacity:</strong> {data.capacity} <small>/room</small></p>
-            <p><strong>Resources:</strong> {data.resources.length > 0 ? data.resources.join(', ') : "No resources available."}</p>
+            <p><strong>Resources:</strong> {data.resources.length > 0 ? data.resources.join(', ') : "No resources data available."}</p>
+            <p className="fst-italic text-dark">Categorie : {data.categorie.length > 0 ? data.categorie.join(', ') : "No resources data available."}</p>
+            {data.owner.email ? <p className="fw-lighter">For more inquire : {data.owner.email}</p> : ''}
+            </div>
+
             {auth.isRenter ? (
             <div className='row g-0'>
               <div className="col-3">
@@ -149,12 +160,14 @@ export default function Detail({ data, onUpdate }) {
                   }}
                 />
                 <p className="mt-2"><strong>Total Price: </strong>₹{totalPrice.toFixed(2)}</p>
-                <button className="btn btn-success" onClick={handleConfirmBooking}>Confirm Booking</button>
+                <button className="btn btn-success" onClick={auth.isLoggedIn ? handleConfirmBooking : ()=>authref.current.click()}>Confirm Booking</button> : 
               </div>)}
 
           </div>
         </div>
       </div>
     </div>
+    <button className="btn d-none" data-bs-toggle="modal" data-bs-target="#signInModal" ref={authref}></button>
+    </>
   );
 }

@@ -196,12 +196,6 @@ export default function Update({data}) {
                                         <label htmlFor="resources" className="form-label">Resources</label>
                                         <input type="text" className="form-control" name='resources' id="resources" value={values.resources} onChange={(e) => setValues({ ...values, resources: e.target.value.split(',') })} placeholder="Enter resources separated by commas" />
                                     </div>
-
-
-                                    <div className="col-12 mb-3">
-                                        <label htmlFor="photos" className="form-label">Photos</label>
-                                        <input type="file" className="form-control" name="photos" id="photos" multiple onChange={handleChange} />
-                                    </div>
                                 </div>
 
                                 <button type="submit" className="btn btn-primary" disabled={Object.keys(errors).length !== 0}>Update</button>

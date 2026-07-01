@@ -65,11 +65,7 @@ export default function Auth() {
                   "Content-Type": "application/json",
                 }
               );
-
-              // auth.isRenter ? auth.login(responseData.renter._id) : auth.login(responseData.owner._id);
-              // console.log(responseData);
               auth.login(responseData.user._id, responseData.authToken);
-              // localStorage.setItem("authToken", responseData.authToken);
               closeButtonRef.current.click();
               toast.success("Signup successfully",{autoClose: 500, hideProgressBar:true});
 
@@ -118,7 +114,7 @@ export default function Auth() {
               closeButtonRef.current.click();
 
               toast.success("Login successfully",{autoClose: 500, hideProgressBar:true});
-    }catch(err){}
+    }catch(err){ toast.error(err.message)}
     setValues({
       email: '',
       password: '',
@@ -199,10 +195,10 @@ export default function Auth() {
                     <input type="tel" className={`form-control ${errors.mobile !== undefined ? 'is-invalid' : 'is-valid'}`} name='mobile' value={values.mobile} onChange={handleChange} id="mobile" placeholder="+91" />
                     <div className="invalid-feedback">{errors.mobile}</div>
                   </div>
-                  <div className="input-group mb-3">
+                  {/* <div className="input-group mb-3">
                     <input type="file" className="form-control" id="inputGroupFile02"/>
                     <label className="input-group-text" for="inputGroupFile02">Upload</label>
-                  </div>
+                  </div> */}
                   <button type="submit" disabled={Object.keys(errors).length !== 0} className="btn btn-primary" onClick={handleSignup}>Submit</button>
                 </form>
               </div>

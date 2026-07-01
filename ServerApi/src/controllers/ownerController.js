@@ -36,11 +36,11 @@ exports.login = async (req, res, next) =>{
         const {email, password} = req.body;
         const ret = await Owner.findOne({email}).populate("propertyList");
         if(!ret)
-            res.status(404).send("user not found !");
+            return res.status(404).send({message:"user not found !"});
         let isValidPassword = false;
     isValidPassword = await bcrypt.compare(password, ret.password);
         if(!isValidPassword)
-            res.status(401).send("password mismatch");
+            return res.status(401).send({message: "password mismatch"});
 
         const authToken = jwt.sign({_id : ret._id, isRenter : false}, process.env.JWT_SECRET);
 

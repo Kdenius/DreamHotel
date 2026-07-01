@@ -25,7 +25,7 @@ export default function Property() {
     const fetchProperty = async () => {
       try {
         const url = (auth.isLoggedIn && !auth.isRenter) ? `http://localhost:1204/property/all/${auth.userId}` : 'http://localhost:1204/property/all';
-        console.log('nodrre'+auth.isRenter);
+        // console.log('nodrre'+auth.isRenter);
         const responseData = await sendRequest(url);
         setProperty(responseData);
         if(responseData.length > 0)

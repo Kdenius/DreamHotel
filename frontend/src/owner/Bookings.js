@@ -71,7 +71,7 @@ const Bookings = () => {
                                     <strong>End Date:</strong> {new Date(booking.endDate).toLocaleDateString()}<br />
                                     <strong>Total Price:</strong> ₹{booking.totalPrice.toFixed(2)}<br />
                                 </p>
-                                <button className="btn btn-success" onClick={() => handleComplete(booking._id)}>Complete</button>
+                                {booking.status !== 'makerefund' &&<button className="btn btn-success" onClick={() => handleComplete(booking._id)}>Complete</button>}
                                 <button className="btn btn-danger ms-2" onClick={() => handleRefund(booking)}>Refund</button>
                             </div>
                         </div>

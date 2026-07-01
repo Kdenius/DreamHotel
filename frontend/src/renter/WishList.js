@@ -22,6 +22,7 @@ export default function WishList() {
       const userId = auth.userId;
       const responseData = await sendRequest(`http://localhost:1204/renter/wishlist/${userId}`);
       setProperty(responseData.wishList);
+      if(responseData.wishList.length > 0)
       setSelectedProperty(responseData.wishList[0]);
       console.log(responseData);
     } catch (err) { 
@@ -45,7 +46,7 @@ export default function WishList() {
     setSelectedProperty(prop); 
     popup.current.click();
   };
-
+  const baseUrl = 'http://localhost:1204/images/';
   return (
     <>
       {isLoading && <Loading />}
@@ -57,26 +58,23 @@ export default function WishList() {
                   <div className="card-header fw-bold text-capitalize" >
                     {ele.title} <small className="fw-lighter small me-5">({ele.address.streetAddress}, {ele.address.city}, {ele.address.state})</small>
                     ₹{ele.price}<small className='fw-light text-lowercase'>/day</small>
-                    
                   </div>
                   <button className="btn position-absolute top-0 end-0" onClick={() => pullWishList(ele._id)} >
                       <i className="bi bi-trash-fill"></i>
                     </button>
                   <div className="row g-0" onClick={() => handleCardClick(ele)}>
-                    <div className="col-8">
-                      {/* <blockquote className="blockquote mb-0">
-                        <p>A well-known quote, contained in a blockquote element.</p>
-                        <footer className="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
-                      </blockquote> */}
-                      <p>{ele.resources.length > 0 ? ele.resources.join(', ') : "very good place"}</p>
-                        <p>{ele.description}</p>
-                        <p>{ele.resources.length > 0 ? ele.resources.join(', ') : ''}</p>
+                    <div className="col-8 ps-3">
+                      <p className="fst-italic"><strong>Resources : </strong>{ele.resources.length > 0 ? ele.resources.join(', ') : "very good place"}</p>
+                        <span><strong>Capacity : </strong>{ele.capacity}<small className='fw-light text-lowercase me-5'>/room</small>
+                        <strong>Total Rooms : </strong>{ele.rooms}
+                        </span>
+                        <p className="fw-light text-center mt-1">{ele.description}</p>
                     </div>
                     <div className="col-md-2">
-                      <img src={(ele.photos && ele.photos.length > 0) ? `images/${ele.photos[0]}` : "images/image.png"} className="img-fluid " alt="..." />
+                      <img src={(ele.photos && ele.photos.length > 0) ? `${baseUrl}${ele.photos[0]}` : "images/image.png"} className="img-fluid w-100 h-100" alt="..." />
                     </div>
                     <div className="col-md-2">
-                      <img src={(ele.photos && ele.photos.length > 0) ? `images/${ele.photos[0]}` : "images/image.png"} className="img-fluid " alt="..." />
+                      <img src={(ele.photos && ele.photos.length > 0) ? `${baseUrl}${ele.photos[1]}` : "images/image.png"} className="img-fluid w-100 h-100 " alt="..." />
                     </div>
                   </div>
                 </div>
@@ -93,41 +91,5 @@ export default function WishList() {
         ) : '' }
     </>
   )
-
-  {/* <div>
-<h1>Wishlist</h1>
-<div className="row">
-  {property.length > 0 ? (
-    property.map((item) => (
-      <div className="col-md-4" key={item.id}>
-        <div className="card m-2">
-          <img
-            src={item.photos.length > 0 ? `images/${item.photos[0]}` : "images/image.png"}
-            className="card-img-top"
-            alt={item.title}
-          />
-          <div className="card-body">
-            <h5 className="card-title">{item.title}</h5>
-            <p className="card-text">
-              {item.address.streetAddress}, {item.address.city}, {item.address.state}
-            </p>
-            <p className="card-text">
-              <strong>Price:</strong> {item.price} <small>/day</small>
-            </p>
-            <p className="card-text">
-              <strong>Capacity:</strong> {item.capacity} <small>/room</small>
-            </p>
-            <p className="card-text">
-              <small>{item.resources.length > 0 ? item.resources.join(', ') : "No resources available."}</small>
-            </p>
-          </div>
-        </div>
-      </div>
-    ))
-  ) : (
-    <p>No properties in your wishlist.</p>
-  )}
-</div>
-</div> */}
 
 }

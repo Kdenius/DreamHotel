@@ -82,10 +82,10 @@ function App() {
   if (isLoading) {
     // Optionally render a loading spinner or component while checking auth
     routes = <Loading />;
-  } else if (isLoggedIn)  {
+  } else if (isLoggedIn) {
     routes = (
       <Routes>
-        <Route exact path="/" element={<Property />} />
+          
         {/* <Route path="/" element={<>hello world</>} /> */}
         <Route path="/wishlist" element={<WishList />} />
         <Route path="/triplist" element={<TripList />} />
@@ -94,55 +94,45 @@ function App() {
 
 
         <Route exact path="/payment" element={<Payment />} />
-
-
-        {/* <Route path="/:userId/places" element={<UserPlaces />} />
-        <Route path="/places/new" element={<NewPlace />} />
-        <Route path="/places/:placeId" element={<UpdatePlace />} />
-        <Route path="*" element={<Navigate to="/" />} /> */}
       </Routes>
     );
   } else {
     routes = (
       <Routes>
         <Route exact path="/" element={<Property />} />
-
-        {/* <Route path="/:userId/places" element={<UserPlaces />} /> */}
-        {/* <Route path="/auth" element={<Auth/>} /> */}
-        {/* <Route path="*" element={<Navigate to="/auth" />} /> */}
       </Routes>
     );
   }
 
   return (
     <>
-    <AuthContext.Provider
-      value={{
-        isLoggedIn: isLoggedIn,
-        userId: userId,
-        login: login,
-        logout: logout,
-        isRenter: isRenter,
-        setIsRenter: setIsRenter,
-      }}
-    >
-      <Router>
-        <Navbar />
-        <main>{routes}</main>
-        <ToastContainer
-    position="bottom-center"
-    autoClose={3000} // duration in ms
-    hideProgressBar={false}
-    closeOnClick
-    pauseOnHover
-    draggable
-    pauseOnFocusLoss
-/>
-      </Router>
-    </AuthContext.Provider>
-    
+      <AuthContext.Provider
+        value={{
+          isLoggedIn: isLoggedIn,
+          userId: userId,
+          login: login,
+          logout: logout,
+          isRenter: isRenter,
+          setIsRenter: setIsRenter,
+        }}
+      >
+        <Router>
+          <Navbar />
+          <main>{routes}</main>
+          <ToastContainer
+            position="bottom-center"
+            autoClose={3000} // duration in ms
+            hideProgressBar={false}
+            closeOnClick
+            pauseOnHover
+            draggable
+            pauseOnFocusLoss
+          />
+        </Router>
+      </AuthContext.Provider>
+
     </>
-    
+
   );
 }
 

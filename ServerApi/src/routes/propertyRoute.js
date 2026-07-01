@@ -1,8 +1,9 @@
 const express = require("express");
-const {add, all, oall, del, update, getByid, availableRoom, changeStatus} = require("../controllers/propertyController");
+const {add, all, oall, del, update, getByid, availableRoom, changeStatus, searchProperties} = require("../controllers/propertyController");
 
 const router =  express.Router();
 
+router.route("/search").get(searchProperties);  
 router.route("/new").post(add); // for adding new property by owner
 router.route("/all/:id").get(oall); // show all property of owner
 router.route("/all").get(all); // totally all

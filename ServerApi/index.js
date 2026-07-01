@@ -6,6 +6,7 @@ require("./src/db/connection");
 app.use(express.json());
 const cors = require("cors");
 const jwt = require('jsonwebtoken');
+const path = require('path');
 
 const owner = require("./src/routes/ownerRoute");
 const property = require("./src/routes/propertyRoute");
@@ -24,6 +25,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'], // Specify allowed methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
 }));
+
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 app.get("/verify", (req, res, next) => {
   const token = req.headers['authorization'];

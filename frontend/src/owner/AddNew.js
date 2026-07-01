@@ -17,40 +17,17 @@ export default function AddNew() {
         rooms: '',
         price: '',
         capacity: '',
-        photos: [],
+        photos: [], 
         description: '',
-        categorie: [],
-        resources: []
+        categorie: [], 
+        resources: []  
     });
     const [errors, setErrors] = useState({});
     const auth = useContext(AuthContext);
     const { isLoading, error, sendRequest, clearError } = useHttpClient();
     const closeButtonRef = useRef(null);
-    // const navigate = useNavigate();
-    // console.log('inside newadd',data);
-    // useEffect(() => {
-    //     if (data) {
-    //         setValues({
-    //             title: data.title || '',
-    //             address: {
-    //                 streetAddress: data.address.streetAddress || '',
-    //                 pincode: data.address.pincode || '',
-    //                 city: data.address.city || '',
-    //                 state: data.address.state || '',
-    //                 country: data.address.country || ''
-    //             },
-    //             rooms: data.rooms || '',
-    //             price: data.price || '',
-    //             capacity: data.capacity || '',
-    //             photos: data.photos || [],
-    //             description: data.description || '',
-    //             categorie: data.categorie || [],
-    //             resources: data.resources || []
-    //         });
-    //     }
-    // }, [data]);
-    // console.log(values.address.pincode);
-// console.log(values.title)
+    const navigate = useNavigate();
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name.includes('.')) {
@@ -62,8 +39,9 @@ export default function AddNew() {
                     [child]: value
                 }
             }));
-            //  } else if (name === 'photos') {
-            //  setValues({ ...values, photos: [...e.target.files].map(file => URL.createObjectURL(file)) });
+        } else if (name === 'photos') {
+            // Update photos with the file objects
+            setValues((prevValues) => ({ ...prevValues, photos: [...e.target.files] }));
         } else {
             setValues({ ...values, [name]: value });
         }
@@ -75,7 +53,6 @@ export default function AddNew() {
     }, [values]);
 
     const validate = (values) => {
-        // console.log('inside validate',values);
         let tempErrors = {};
         if (!values.title) tempErrors.title = 'Title is required';
         if (!values.address.streetAddress) tempErrors.streetAddress = 'Street address is required';
@@ -95,54 +72,56 @@ export default function AddNew() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (Object.keys(errors).length === 0) {
+            const formData = new FormData();
+            // Append values to FormData
+            for (const key in values) {
+                if (key === 'photos') {
+                    values.photos.forEach((file) => formData.append('photos', file));
+                } else if (key === 'address') {
+                    for (const addressKey in values.address) {
+                        formData.append(`address[${addressKey}]`, values.address[addressKey]);
+                    }
+                } else {
+                    formData.append(key, values[key]);
+                }
+            }
+            formData.append('owner', auth.userId); // Add owner
+            
             try {
                 const responseData = await sendRequest(
                     'http://localhost:1204/property/new',
                     'POST',
-                    JSON.stringify({
-                        ...values,
-                        owner: auth.userId
-                    }),
-                    {
-                        'Content-Type': 'application/json'
-                    }
+                    formData
                 );
                 console.log(responseData);
-                closeButtonRef.current.click(); 
-                // navigate('/');
-
+                closeButtonRef.current.click();
+                setValues({
+                    title: '',
+                    address: {
+                        streetAddress: '',
+                        pincode: '',
+                        city: '',
+                        state: '',
+                        country: ''
+                    },
+                    rooms: '',
+                    price: '',
+                    capacity: '',
+                    photos: [], 
+                    description: '',
+                    categorie: [], 
+                    resources: []  
+                });
+                navigate('/'); 
             } catch (err) {
                 console.error(err);
             }
         }
     };
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     if (Object.keys(errors).length === 0) {
-    //         try {
-    //             const url = data 
-    //                 ? `http://localhost:1204/property/${data._id}` 
-    //                 : 'http://localhost:1204/property/new';
-    //             const method = data ? 'PATCH' : 'POST';
-                
-    //             await sendRequest(url, method, JSON.stringify({
-    //                 ...values,
-    //                 owner: auth.userId
-    //             }), {
-    //                 'Content-Type': 'application/json'
-    //             });
-                
-    //             closeButtonRef.current.click();
-    //         } catch (err) {
-    //             console.error(err);
-    //         }
-    //     }
-    // };
 
     return (
         <div>
             {isLoading && <Loading />}
-            {/* { data ? ( */}
             <div className="modal fade" id="addPropertyModal" tabIndex="-1" aria-labelledby="addPropertyModalLabel" aria-hidden="true">
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
@@ -153,6 +132,7 @@ export default function AddNew() {
                         <div className="modal-body">
                             <form onSubmit={handleSubmit}>
                                 <div className="row">
+                                    {/* Form fields here */}
                                     <div className="col-md-6 mb-3">
                                         <label htmlFor="title" className="form-label">Title</label>
                                         <input type="text" className={`form-control ${errors.title ? 'is-invalid' : 'is-valid'}`} name='title' id="title" value={values.title} onChange={handleChange} placeholder="Enter property title" />
@@ -183,60 +163,62 @@ export default function AddNew() {
                                         <div className="invalid-feedback">{errors.state}</div>
                                     </div>
 
-                                    <div className="col-md-4 mb-3">
+                                    <div className="col-md-6 mb-3">
                                         <label htmlFor="country" className="form-label">Country</label>
                                         <input type="text" className={`form-control ${errors.country ? 'is-invalid' : 'is-valid'}`} name='address.country' id="country" value={values.address.country} onChange={handleChange} placeholder="Enter country" />
                                         <div className="invalid-feedback">{errors.country}</div>
                                     </div>
 
-                                    <div className="col-md-4 mb-3">
-                                        <label htmlFor="rooms" className="form-label">Rooms</label>
+                                    <div className="col-md-6 mb-3">
+                                        <label htmlFor="rooms" className="form-label">Number of Rooms</label>
                                         <input type="number" className={`form-control ${errors.rooms ? 'is-invalid' : 'is-valid'}`} name='rooms' id="rooms" value={values.rooms} onChange={handleChange} placeholder="Enter number of rooms" />
                                         <div className="invalid-feedback">{errors.rooms}</div>
                                     </div>
 
-                                    <div className="col-md-4 mb-3">
+                                    <div className="col-md-6 mb-3">
                                         <label htmlFor="price" className="form-label">Price</label>
                                         <input type="number" className={`form-control ${errors.price ? 'is-invalid' : 'is-valid'}`} name='price' id="price" value={values.price} onChange={handleChange} placeholder="Enter price" />
                                         <div className="invalid-feedback">{errors.price}</div>
                                     </div>
 
-                                    <div className="col-md-3 mb-3">
+                                    <div className="col-md-6 mb-3">
                                         <label htmlFor="capacity" className="form-label">Capacity</label>
                                         <input type="number" className={`form-control ${errors.capacity ? 'is-invalid' : 'is-valid'}`} name='capacity' id="capacity" value={values.capacity} onChange={handleChange} placeholder="Enter capacity" />
                                         <div className="invalid-feedback">{errors.capacity}</div>
                                     </div>
 
-                                    <div className="col-9 mb-3">
-                                        <label htmlFor="categorie" className="form-label">Categories</label>
-                                        <input type="text" className={`form-control ${errors.categorie ? 'is-invalid' : 'is-valid'}`} name='categorie' id="categorie" value={values.categorie} onChange={(e) => setValues({ ...values, categorie: e.target.value.split(',') })} placeholder="Enter categories separated by commas" />
-                                        <div className="invalid-feedback">{errors.categorie}</div>
+                                    <div className="col-md-12 mb-3">
+                                        <label htmlFor="photos" className="form-label">Photos</label>
+                                        <input type="file" className="form-control" multiple accept="image/*" name='photos' id="photos" onChange={handleChange} />
                                     </div>
-                                    <div className="col-12 mb-3">
+
+                                    <div className="col-md-12 mb-3">
                                         <label htmlFor="description" className="form-label">Description</label>
-                                        <textarea className={`form-control ${errors.description ? 'is-invalid' : 'is-valid'}`} name='description' id="description" value={values.description} onChange={handleChange} placeholder="Enter property description"></textarea>
+                                        <textarea className={`form-control ${errors.description ? 'is-invalid' : 'is-valid'}`} name='description' id="description" rows="4" value={values.description} onChange={handleChange} placeholder="Enter description"></textarea>
                                         <div className="invalid-feedback">{errors.description}</div>
                                     </div>
-                                    <div className="col-12 mb-3">
-                                        <label htmlFor="resources" className="form-label">Resources</label>
-                                        <input type="text" className="form-control" name='resources' id="resources" value={values.resources} onChange={(e) => setValues({ ...values, resources: e.target.value.split(',') })} placeholder="Enter resources separated by commas" />
+
+                                    <div className="col-md-12 mb-3">
+                                        <label htmlFor="categorie" className="form-label">Categories</label>
+                                        <input type="text" className={`form-control ${errors.categorie ? 'is-invalid' : 'is-valid'}`} name='categorie' id="categorie" value={values.categorie} onChange={handleChange} placeholder="Enter categories (comma separated)" />
+                                        <div className="invalid-feedback">{errors.categorie}</div>
                                     </div>
 
+                                    <div className="col-md-12 mb-3">
+                                        <label htmlFor="resources" className="form-label">Resources</label>
+                                        <input type="text" className={`form-control ${errors.resources ? 'is-invalid' : 'is-valid'}`} name='resources' id="resources" value={values.resources} onChange={handleChange} placeholder="Enter resources (comma separated)" />
+                                        <div className="invalid-feedback">{errors.resources}</div>
+                                    </div>
 
-                                    <div className="col-12 mb-3">
-                                        <label htmlFor="photos" className="form-label">Photos</label>
-                                        <input type="file" className="form-control" name="photos" id="photos" multiple onChange={handleChange} />
+                                    <div className="col-md-12">
+                                        <button type="submit" disabled={Object.keys(errors).length !== 0} className="btn btn-primary">Add Property</button>
                                     </div>
                                 </div>
-
-                                <button type="submit" className="btn btn-primary" disabled={Object.keys(errors).length !== 0}>Add Property</button>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-            {/* ): ''} */}
         </div>
-        
     );
 }
